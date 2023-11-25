@@ -2,7 +2,7 @@
 	<section class="bg-gray-50">
 		<div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
 			<a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900">
-				<img class="w-8 h-auto mr-2" src="logo_hust.png" alt="logo">
+				<img class="w-8 h-auto mr-2" src="/logo_hust.png" alt="logo">
 				HUST
 			</a>
 			<div
@@ -38,8 +38,10 @@
 								password?</a>
 						</div>
 						<button type="submit"
-							class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Sign
-							in</button>
+							class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+							Sign in
+						</button>
+						
 					</form>
 				</div>
 			</div>
@@ -49,11 +51,37 @@
   
 <script setup>
 import { ref } from 'vue'
+import VueJwtDecode from 'vue-jwt-decode'
+
+// Check if user was logged in
+const params = useRoute().query
+const access_token = useCookie('access_token', {
+	default: () => {},
+	watch: true
+})
+const refresh_token = useCookie('refresh_token', {
+	default: () => {},
+	watch: true
+})
+
+
+if (access_token.value && access_token.value != null) {
+	let decoded_token = VueJwtDecode.decode(access_token)
+	navigateTo({
+		path: params.redirect_uri, 
+		query: {
+			access_token: access_token.value,
+			refresh_token: refresh_token.value
+		}
+	}, {
+		external: true
+	})
+}
+
 const config = useRuntimeConfig()
 
 const BASE_URL = `${config.public.SERVER_HOST}:${config.public.SERVER_PORT}/api/auth/code`
 
-const params = useRoute().query
 
 const formData = ref({
 	email: '',
@@ -62,17 +90,28 @@ const formData = ref({
 })
 
 const submitForm = async () => {
-	const { data, pending, error } = await useFetch(BASE_URL, {
+	const { data, error } = await useFetch(BASE_URL, {
+		lazy: true,
 		method: 'POST',
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded"
 		},
 		body: new URLSearchParams({
-			email: formData.value.email,
+			username: formData.value.email,
 			password: formData.value.password,
 			...params
 		})
 	})
+	if (data) {
+		navigateTo({
+		path: params.redirect_uri, 
+		query: {
+			code: data.code
+		}
+	}, {
+		external: true
+	})	
+	}
 	
 }
 </script>

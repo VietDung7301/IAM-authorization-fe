@@ -100,19 +100,19 @@ const submitForm = async () => {
 			username: formData.value.email,
 			password: formData.value.password,
 			...params
-		})
-	})
-	if (data) {
-		navigateTo({
-		path: params.redirect_uri, 
-		query: {
-			code: data.code
+		}),
+		onResponse({ request, response, options }) {
+			console.log('response', response._data)
+			navigateTo({
+				path: params.redirect_uri,
+				query: {
+					code: response._data.code
+				}
+			}, {
+				external: true
+			})
 		}
-	}, {
-		external: true
-	})	
-	}
-	
+	})
 }
 </script>
   

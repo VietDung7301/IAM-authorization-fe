@@ -66,7 +66,8 @@ const refresh_token = useCookie('refresh_token', {
 
 
 if (access_token.value && access_token.value != null) {
-	let decoded_token = VueJwtDecode.decode(access_token)
+	console.log('access_token', access_token.value)
+	// let decoded_token = VueJwtDecode.decode(access_token)
 	navigateTo({
 		path: params.redirect_uri, 
 		query: {

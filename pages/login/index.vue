@@ -80,7 +80,7 @@ if (access_token.value && access_token.value != null) {
 
 const config = useRuntimeConfig()
 
-const BASE_URL = `${config.public.SERVER_HOST}:${config.public.SERVER_PORT}/api/auth/code`
+const BASE_URL = `${config.public.AUTH_SERVER}/api/auth/code`
 
 
 const formData = ref({
@@ -90,28 +90,34 @@ const formData = ref({
 })
 
 const submitForm = async () => {
-	const { data, error } = await useFetch(BASE_URL, {
-		lazy: true,
-		method: 'POST',
-		headers: {
-			"Content-Type": "application/x-www-form-urlencoded"
+	const { data, error } = await useFetch(BASE_URL, 
+	{
+		onRequest({ request, options }) {
+			options.method = 'POST',
+			options.headers = {...options.headers, 'Content-Type': 'application/x-www-form-urlencoded'}
+			options.body = new URLSearchParams({
+								username: formData.value.email,
+								password: formData.value.password,
+								...params
+							})
 		},
-		body: new URLSearchParams({
-			username: formData.value.email,
-			password: formData.value.password,
-			...params
-		})
+		onResponse({ request, response, options }) {
+			console.log('response ne: ', response)
+			if (response.status == 200) {
+				navigateTo({
+					path: params.redirect_uri, 
+					query: {
+						code: response._data.code
+					}
+				}, {
+					external: true
+				})	
+			}
+		},
+		onResponseError({ request, response, options }) {
+			console.log('error roiiii')
+		},
 	})
-	if (data) {
-		navigateTo({
-		path: params.redirect_uri, 
-		query: {
-			code: data.code
-		}
-	}, {
-		external: true
-	})	
-	}
 	
 }
 </script>

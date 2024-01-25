@@ -6,8 +6,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      SERVER_HOST: process.env.SERVER_HOST,
-      SERVER_PORT: process.env.SERVER_PORT
+      AUTH_SERVER: process.env.AUTH_SERVER
     }
   }
 })
